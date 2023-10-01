@@ -4,6 +4,7 @@
  */
 package com.flappybirds.flappybirds;
 
+import java.awt.Graphics;
 import javax.swing.JPanel;
 
 
@@ -18,6 +19,16 @@ import javax.swing.JPanel;
 //store several components
 public class Renderer extends JPanel{
     
-    private static final long serialVersionUID = 1L; //assigning the class a serial number, which is used during deserialization to verify that the sender and receiver of a serialized object have loaded classes for that object that are compatible with respect to serialization.
+    private static final long serialVersionUID = 1L; //assigning the class a serial number, 
+    //which is used during deserialization to verify that the sender and receiver of a serialized object have loaded classes for that object that are compatible with respect to serialization.
+
+    //overriding repaint method in the main flappyBirds file
+    @Override
+    protected void paintComponent(Graphics g) { 
+        super.paintComponent(g); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/OverriddenMethodBody
+   
+     FlappyBirds.flappyBirds.repaint(g);
+    }
+    
     
 }
