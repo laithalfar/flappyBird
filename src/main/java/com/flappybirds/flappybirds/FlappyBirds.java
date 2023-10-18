@@ -32,11 +32,12 @@ public class FlappyBirds implements ActionListener{
     public ArrayList<Rectangle> columns;
     public Random rand;
     
-    public int ticks, yMotion;
+    
+    public int ticks=0, yMotion=0;
     public FlappyBirds() {
     
     JFrame jframe = new JFrame();
-    Timer timer = new Timer(20, this);
+    Timer timer = new Timer(20, this); //to give it time to repaint the graphics
     
     renderer = new Renderer();
     rand = new Random();
@@ -48,26 +49,29 @@ public class FlappyBirds implements ActionListener{
     jframe.setTitle("Flappy Bird"); // title displayed
     jframe.setVisible(true); //make it visisble
     
-    bird = new Rectangle(width/2-10, height/2, 20, 20);
+    bird = new Rectangle(width/2-10, height/2-10, 20, 20);
     columns = new ArrayList<Rectangle>(); 
     timer.start(); // start the timer
+    
+    addColumn(true);
+    addColumn(true);
+    addColumn(true);
+    addColumn(true);
+    
     }
 
     public void addColumn(boolean start){
-        int spaceCol = 300;
-        int widthCol = 100;
-        int heightCol = 50 + rand.nextInt(300);
-        
+        int spaceCol = 500;
+        int widthCol = 114;
+        int heightCol = 43 + rand.nextInt(258);
         
         if(start){
         columns.add(new Rectangle(width + widthCol + columns.size()*300, height - heightCol - 120, widthCol, heightCol));
-        columns.add(new Rectangle(width + widthCol + (columns.size()-1)*300,0, widthCol, height - heightCol - 120));
+        columns.add(new Rectangle(width + widthCol + (columns.size()-1)*300,0, widthCol, height - heightCol - spaceCol));
         } else{
         columns.add(new Rectangle(columns.get(columns.size()-1).x + 600, height - heightCol - 120, widthCol, heightCol));
-        columns.add(new Rectangle(columns.get(columns.size()-1).x,0, widthCol, height - heightCol - 120));
-    }
-        
-        
+        columns.add(new Rectangle(columns.get(columns.size()-1).x,0, widthCol, height - heightCol - spaceCol));
+    }      
     }
     
     
@@ -80,13 +84,37 @@ public class FlappyBirds implements ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         
-        renderer.repaint();
+        int speed = 10;
         
         ticks++;
+        
+        //move x position of column by 10
+        for(int i = 0; i < columns.size(); i++){
+           Rectangle column = columns.get(i);
+           column.x -= speed;
+       }
+        
+        //motion of the bird falling down where the Bird would automatically fall to the ground if no 
+        //action is taken
         if(ticks % 2 == 0 && yMotion < 15){
             yMotion += 2;
         }
         
+       //remove column when out of screen and replace with new
+       for(int i = 0; i < columns.size(); i++){
+           Rectangle column = columns.get(i);
+           if(column.x + column.width<0){
+               columns.remove(column);
+               
+               //add a lower column if the column generated is an upper one
+               // this is because in flappy bird there can be a lower column
+               //without an upper column but not vice versa
+               if(column.y == 0){
+               addColumn(false);
+               }
+           }
+        }
+        renderer.repaint();
         bird.y += yMotion;
         //throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -116,5 +144,9 @@ public class FlappyBirds implements ActionListener{
         //graphics for a grass rectangle
         g.setColor(Color.green.darker());
         g.fillRect(0, height - 120, width, 20);
+        
+        for(Rectangle column: columns){
+            paintColumn(g, column);
+        }
     }
 }
