@@ -13,9 +13,26 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
+import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.Timer;
 
 /**
@@ -40,11 +57,27 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
     public int ticks = 0, yMotion = 0, score = 0;
 
-    public FlappyBirds() {
+    public String imagePath = "C:\\Users\\laith\\java projects\\flappyBirds\\src\\main\\java\\com\\flappybirds\\flappybirds\\andre.jpg";
+    BufferedImage myPicture;
+
+    public int imageX = width / 2 - 10, imageY = height / 2 - 10;
+
+    public boolean alreadyExecuted = false;
+
+    int speed = 11;
+
+    boolean speedIncreased = false;
+
+    public FlappyBirds() throws IOException {
 
         JFrame jframe = new JFrame();
         Timer timer = new Timer(20, this); //to give it time to repaint the graphics
 
+        try {
+            myPicture = ImageIO.read(new File(imagePath));
+        } catch (IOException e) {
+            System.out.println("image could not load!");
+        }
         renderer = new Renderer();
         rand = new Random();
 
@@ -57,6 +90,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
         jframe.setTitle("Flappy Bird"); // title displayed
         jframe.setVisible(true); //make it visisble
 
+        //Image()
         bird = new Rectangle(width / 2 - 10, height / 2 - 10, 20, 20);
         columns = new ArrayList<Rectangle>();
         timer.start(); // start the timer
@@ -68,6 +102,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
     }
 
+    //add a column
     public void addColumn(boolean start) {
         int spaceCol = 225 + rand.nextInt(75);
         int widthCol = 114;
@@ -88,13 +123,15 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
     }
 
     public void jump() {
-        
+
         //restart game when pressed
         if (gameOver) {
 
             bird = new Rectangle(width / 2 - 10, height / 2 - 10, 20, 20);
             columns.clear();
             yMotion = 0;
+            imageX = width / 2 - 10;
+            imageY = height / 2 - 10;
             score = 0;
 
             addColumn(true);
@@ -122,16 +159,25 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
     public void actionPerformed(ActionEvent e) {
 
         //speed of moving screen
-        int speed = 11;
-
         ticks++;
 
         if (started) {
 
             //move x position of column by 10
             for (int i = 0; i < columns.size(); i++) {
+
                 Rectangle column = columns.get(i);
                 column.x -= speed;
+            }
+
+            //increase speed of game when score is a multiple of 10 is reached
+            if ((score % 10 == 0) && (score != 0) && !speedIncreased) {
+                speed += 2;
+                speedIncreased = true;
+            }
+
+            if (!(score % 10 == 0)) {
+                speedIncreased = false;
             }
 
             //motion of the bird falling down where the Bird would automatically fall to the ground if no 
@@ -142,6 +188,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
             //remove column when out of screen and replace with new
             for (int i = 0; i < columns.size(); i++) {
+
                 Rectangle column = columns.get(i);
                 if (column.x + column.width < 0) {
                     columns.remove(column);
@@ -151,16 +198,18 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
                     //without an upper column but not vice versa
                     if (column.y == 0) {
                         addColumn(false);
+
                     }
                 }
             }
 
             bird.y += yMotion;
+            imageY += yMotion;
 
             for (Rectangle column : columns) {
 
                 //increase score
-                if ((column.y == 0) && (bird.x + bird.width / 2 > column.x + (column.width / 2 - 6)) && (bird.x + bird.width / 2 < column.x + column.width / 2 + 6)) {
+                if ((column.y == 0) && (bird.x + bird.width / 2 > column.x + (column.width / 2 - 12)) && (bird.x + bird.width / 2 < column.x + column.width / 2 + 12)) {
                     score++;
                 }
 
@@ -169,18 +218,24 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
                     gameOver = true;
                     bird.x = column.x - bird.width;
+                    imageX = column.x - bird.width;
+
                     if (bird.x <= column.x) {
                         bird.x = column.x - bird.width;
+                        imageX = column.x - bird.width;
                     } else {
                         if (column.y != 0) {
                             bird.y = column.y - bird.height;
+                            imageY = column.y - bird.width;
                         } else if (bird.y < column.height) {
                             bird.y = column.height;
+                            imageY = column.height;
                         }
                     }
 
                 }
             }
+
             //if the bird goes below the ground or touches the  the roof game is over
             if (bird.y > (height - 120) || (bird.y < 0)) {
 
@@ -190,6 +245,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
             if (bird.y + yMotion >= height) {
                 bird.y = height - 120;
+                imageY = height - 120;
             }
 
         }
@@ -198,7 +254,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
     }
     //main 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         flappyBirds = new FlappyBirds();
         //System.out.println("Hello World!");
@@ -223,6 +279,10 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
         g.setColor(Color.green.darker());
         g.fillRect(0, height - 120, width, 20);
 
+        g.drawImage(myPicture, 215, 250, 100, 100, null);
+        g.drawImage(myPicture, 555, 250, 100, 100, null);
+        g.drawImage(myPicture, imageX, imageY, 50, 50, null);
+
         //graphics for columns
         for (Rectangle column : columns) {
             paintColumn(g, column);
@@ -230,21 +290,23 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
 
         //font for text
         g.setColor(Color.white);
-        g.setFont(new Font("Arial", 1, 100));
+        g.setFont(new Font("Arial", 1, 75));
 
         //graphics if hasn't started
         if (!started) {
-            g.drawString("Click to Start", 75, height / 2 - 50);
+            g.drawString("Click to Start", 220, height / 2 - 50);
         }
 
         //graphics if gameover
         if (gameOver) {
-            g.drawString("Game Over!", 75, height / 2 - 50);
+            g.drawString("Game Over!", 220, height / 2 - 50);
         }
 
         if (!gameOver && started) {
             g.drawString(String.valueOf(score), width / 2 - 25, 100);
         }
+
+        g.drawString(String.valueOf(speed), width / 2 - 400, 100);
     }
 
     @Override
