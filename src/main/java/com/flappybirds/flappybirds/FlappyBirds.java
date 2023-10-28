@@ -44,13 +44,13 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
     
     public int ticks = 0, yMotion = 0, score = 0;
     
-    public String imagePath = "C:\\Users\\laith\\java projects\\flappyBirds\\src\\main\\java\\com\\flappybirds\\flappybirds\\andre.jpg";
-    public String imagePathBg = "C:\\Users\\laith\\java projects\\flappyBirds\\src\\main\\java\\com\\flappybirds\\flappybirds\\bg_sticker-removebg-preview.png";
+    public String imagePath = "C:\\Users\\laith\\java projects\\flappyBirds\\src\\main\\java\\com\\flappybirds\\flappybirds\\Refai-removebg-preview.png";
+    public String imagePathBg = "C:\\Users\\laith\\java projects\\flappyBirds\\src\\main\\java\\com\\flappybirds\\flappybirds\\bg_sticker.png";
     
     BufferedImage myPicture;
     ArrayList<BufferedImage> myBgPicture;
     
-    public int imageX = width / 2 - 10, imageY = height / 2 - 10;
+    public int imageX = width / 2 - 30, imageY = height / 2 - 50;
     
     public boolean alreadyExecuted = false;
     
@@ -136,9 +136,10 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
             bird = new Rectangle(width / 2 - 10, height / 2 - 10, 20, 20);
             columns.clear();
             yMotion = 0;
-            imageX = width / 2 - 10;
-            imageY = height / 2 - 10;
+            imageX = width / 2 - 30;
+            imageY = height / 2 - 50;
             score = 0;
+            speed = 11;
             
             addColumn(true);
             addColumn(true);
@@ -295,7 +296,7 @@ public class FlappyBirds implements ActionListener, MouseListener, KeyListener {
         }
          
          //bird image draw
-         g.drawImage(myPicture, imageX, imageY, 50, 50, null);
+         g.drawImage(myPicture, imageX, imageY, 70, 70, null);
          
         //graphics for columns
         for (Rectangle column : columns) {
